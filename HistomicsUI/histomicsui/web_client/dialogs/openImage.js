@@ -12,8 +12,8 @@ var dialog;
 function createDialog(item, itemParent) {
     var widget = new BrowserWidget({
         parentView: null,
-        titleText: 'Select a slide...',
-        submitText: 'Open',
+        titleText: '选一个 WSI 幻灯片...',//'Select a slide...',
+        submitText: '打开',//'Open',
         showItems: true,
         selectItem: true,
         helpText: 'Click on a slide item to open.',

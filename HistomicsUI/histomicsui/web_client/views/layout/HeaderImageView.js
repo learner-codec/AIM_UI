@@ -48,7 +48,9 @@ var HeaderImageView = View.extend({
             previousImageLink,
             previousImageName: this._previousName,
             nextImageLink,
-            nextImageName: this._nextName
+            nextImageName: this._nextName,
+            openAnnotationPlaceHolder:"已标注的图片",
+            openImagePlaceHolder: "打开图片..." //Open Images ...
         }));
         return this;
     },

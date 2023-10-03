@@ -22,9 +22,9 @@ if parentChain
         span.g-item-breadcrumb-link(data-id=image.id, data-type='item')
           = image.name()
 button.btn.btn-default.navbar-btn.h-open-annotated-image(type='button')
-  | #[span.icon-list] Annotated images...
+  | #[span.icon-list] #{openAnnotationPlaceHolder}
 button.btn.btn-default.navbar-btn.h-open-image(type='button')
-  | #[span.icon-picture] Open image...
+  | #[span.icon-picture] #{openImagePlaceHolder}
 
 -
   var titlePre = '', titleNext = '';
