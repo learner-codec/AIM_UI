@@ -1,0 +1,450 @@
+---
+version: 2.1
+
+executors:
+  py3:
+    docker:
+      # This image uses the newest version of many dependencies
+      - image: girder/girder_test:latest
+    working_directory: /home/circleci/project
+  py3-mongo:
+    docker:
+      - image: girder/girder_test:latest
+      # Use the oldest supported MongoDB
+      # This is equivalent to the deprecated circleci/mongo:<version>-ram image
+      - image: mongo:3.6
+        command: bash -c "mkdir /dev/shm/mongo && mongod --storageEngine ephemeralForTest --nojournal --dbpath=/dev/shm/mongo --noauth --bind_ip_all"
+    working_directory: /home/circleci/project
+  machine:
+    machine:
+      image: ubuntu-2004:202111-02
+    working_directory: /home/circleci/project
+
+commands:
+  install-girder:
+    description: "Install Girder in a virtualenv and configure CTest"
+    steps:
+      - run:
+          name: Generate python environment checksum file
+          command: ./girder/.circleci/generatePyEnvChecksum.sh > girder/py-env-checksum
+      - restore_cache:
+          key: venv-py3.6-{{ arch }}-{{ checksum "girder/py-env-checksum" }}
+      - run:
+          name: Create virtual environment (if necessary)
+          command: if [ ! -d girder_env ]; then python3 -m venv girder_env; fi
+      - run:
+          name: Activate virtual environment
+          command: echo ". $CIRCLE_WORKING_DIRECTORY/girder_env/bin/activate" >> $BASH_ENV
+      - run:
+          name: Upgrade Python toolchain
+          command: python3 -m pip install --upgrade pip setuptools
+      - run:
+          name: Install Girder
+          # Since the virtual env is cached, attempt to upgrade everything
+          command: >-
+            python3 -m pip install
+            --upgrade
+            --upgrade-strategy eager
+            --editable .[sftp,mount]
+            --editable clients/python
+            --requirement requirements-dev.txt
+          working_directory: girder
+      - save_cache:
+          paths:
+            - girder_env
+          key: venv-py3.6-{{ arch }}-{{ checksum "girder/py-env-checksum" }}
+
+jobs:
+  server-lint-test:
+    executor: py3
+    steps:
+      - checkout:
+          path: girder
+      - run:
+          name: Run server linting tests
+          command: tox -e lint
+          working_directory: girder
+      - run:
+          name: Test public symbols
+          command: tox -e public_names
+          working_directory: girder
+      - run:
+          name: Test building docs
+          command: tox -e docs
+          working_directory: girder
+
+  server-pytest-test:
+    executor: py3-mongo
+    steps:
+      - checkout:
+          path: girder
+      - run:
+          name: Run pytest tests
+          command: tox -e pytest_circleci
+          working_directory: girder
+      - store_test_results:
+          path: girder/build/test/results
+      - persist_to_workspace:
+          root: /home/circleci/project
+          paths:
+            - girder/build/test/coverage
+
+  server-legacy-test:
+    executor: py3-mongo
+    steps:
+      - checkout:
+          path: girder
+      - install-girder
+      - run:
+          name: Create Girder build directory
+          command: mkdir girder_build
+      - run:
+          name: Run CTest
+          command: >-
+            ctest
+            --extra-verbose
+            --script "$CIRCLE_WORKING_DIRECTORY/girder/.circleci/ci_test.cmake"
+            --exclude-regex '^server_pytest_core$'
+          environment:
+            TEST_GROUP: python
+            PYTHON_VERSION: 3.6
+            PYTHON_EXECUTABLE: /home/circleci/project/girder_env/bin/python
+          working_directory: girder_build
+      - persist_to_workspace:
+          root: /home/circleci/project
+          paths:
+            - girder/build/test/coverage
+
+  web-lint-test:
+    executor: py3
+    steps:
+      - checkout:
+          path: girder
+      - run:
+          name: Install Javascript utilities
+          command: npm ci
+          working_directory: girder
+      - run:
+          name: Run Javascript linting
+          command: npm run lint
+          working_directory: girder
+
+  web-test:
+    executor: py3-mongo
+    steps:
+      - checkout:
+          path: girder
+      - install-girder
+      - run:
+          name: Build Girder web client
+          command: girder build --dev | cat
+      - run:
+          name: Create Girder build directory
+          command: mkdir girder_build
+      - run:
+          name: Run CTest
+          command: >-
+            ctest
+            --extra-verbose
+            --script "$CIRCLE_WORKING_DIRECTORY/girder/.circleci/ci_test.cmake"
+          environment:
+            TEST_GROUP: browser
+            PYTHON_VERSION: 3.6
+            PYTHON_EXECUTABLE: /home/circleci/project/girder_env/bin/python
+            JASMINE_TIMEOUT: 15000
+          working_directory: girder_build
+      - store_artifacts:
+          # Failure screenshots from web tests
+          path: girder/build/test/artifacts
+      - persist_to_workspace:
+          root: /home/circleci/project
+          paths:
+            - girder/build/test/coverage
+
+  integration-test:
+    executor: machine
+    steps:
+      - checkout:
+          path: girder
+      - run:
+          name: Install NodeJS 12
+          # CircleCI resets the Bash environment between every step, so any steps using node or npm
+          # must first:
+          #   source $NVM_DIR/nvm.sh
+          command: |
+            source $NVM_DIR/nvm.sh
+            nvm install v12
+            nvm alias default v12
+            NODE_DIR=$(dirname $(which node))
+            echo "export PATH=$NODE_DIR:\$PATH" >> $BASH_ENV
+      - run:
+          # Technically, we should add the circleci user to the fuse group, log
+          # out, and log back in for it to take effect.  This allows fuse to be
+          # available to all users without requiring them to be in the fuse
+          # group
+          name: Allow access to /etc/fuse.conf by all users
+          command: sudo chmod a+r /etc/fuse.conf
+      - run:
+          name: Get rid of existing versions of MongoDB
+          command: >-
+            sudo rm --force /etc/apt/sources.list.d/*mongo*
+            &&
+            sudo apt-get remove mongodb-org mongodb-org-tools mongodb-org-shell mongodb-org-server mongodb-org-mongos
+            || true
+      - run:
+          name: Install MongoDB
+          command: |
+            sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 656408E390CFB1F5
+            echo "deb [arch=amd64] http://repo.mongodb.org/apt/ubuntu $(lsb_release -sc)/mongodb-org/4.4 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org.list
+            sudo apt-get update
+            sudo apt-get install -y mongodb-org-server
+            sudo systemctl start mongod
+      - run:
+          # The "d3" npm package (required by some Girder plugins) has an optional dependency of
+          # "canvas", which requires "node-gyp" to build. node-gyp strictly requires Python 2
+          # (https://www.npmjs.com/package/node-gyp), so install it first before switching to
+          # Python 3.
+          name: Install node-gyp
+          command: |
+            npm install --global node-gyp
+      - run:
+          name: Allow Boto to work with Python 3
+          command: sudo rm --force /etc/boto.cfg
+      - run:
+          name: Set up Python 3.6
+          command: |
+             pyenv install 3.6.3 || true
+             pyenv global 3.6.3
+      - run:
+          name: Install system dependencies for Girder plugins
+          command: sudo apt-get install -y libldap2-dev libsasl2-dev
+      - install-girder
+      - run:
+          name: Build Girder web client
+          command: |
+            npm --version
+            node --version
+            girder build --dev | cat
+      - run:
+          name: Create Girder build directory
+          command: mkdir girder_build
+      - run:
+          name: CMake
+          command: >-
+            cmake
+            ../girder
+            -DPYTHON_VERSION=3.6
+            -DPYTHON_EXECUTABLE=$CIRCLE_WORKING_DIRECTORY/girder_env/bin/python
+          working_directory: girder_build
+      - run:
+          name: make
+          command: make --jobs=3
+          working_directory: girder_build
+      - run:
+          name: CTest
+          command: >-
+            ctest
+            --parallel 3
+            --extra-verbose
+            --label-regex girder_integration
+          working_directory: girder_build
+          environment:
+            JASMINE_TIMEOUT: 15000
+      - store_artifacts:
+          # Failure screenshots from web tests
+          path: girder/build/test/artifacts
+      - persist_to_workspace:
+          root: /home/circleci/project
+          paths:
+            - girder/build/test/coverage
+
+  coverage:
+    executor: py3
+    steps:
+      - checkout:
+          path: girder
+      - attach_workspace:
+          at: /home/circleci/project
+      - run:
+          name: Generate Python coverage report
+          command: tox -e coverage
+          working_directory: girder
+      - run:
+          name: Install Javascript utilities
+          command: npm ci
+          working_directory: girder
+      - run:
+          name: Generate web coverage report
+          command: npm run coverage
+          working_directory: girder
+      - store_artifacts:
+          # Human-readable coverage reports
+          path: girder/build/test/artifacts
+      - run:
+          name: Install Codecov client
+          command: |
+              curl -Os https://uploader.codecov.io/latest/linux/codecov
+              chmod +x codecov
+          working_directory: girder
+      - run:
+          name: Upload coverage
+          command: ./codecov --disable search pycov gcov --root girder --required --file build/test/coverage/py_coverage.xml build/test/coverage/cobertura-coverage.xml
+          working_directory: girder
+
+  ansible-test:
+    executor: py3
+    steps:
+      - checkout:
+          path: girder
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 20.10.12
+      - run:
+          name: Run Ansible tests
+          command: tox -e ansible
+          working_directory: girder
+
+  dockers:
+    machine:
+        image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - run:
+          name: Build the Girder docker
+          command: |
+            docker build --force-rm -t girder/girder .
+      - run:
+          name: Build the Girder test docker
+          command: |
+            cd .circleci
+            docker build --force-rm -t girder/girder_test .
+
+  publish-dockers:
+    machine:
+        image: ubuntu-2004:202111-02
+    steps:
+      - checkout
+      - run:
+          name: Build the Girder docker
+          command: |
+            docker build --force-rm -t girder/girder .
+      - run:
+          name: Build the Girder test docker
+          command: |
+            cd .circleci
+            docker build --force-rm -t girder/girder_test .
+      - run:
+          name: Publish the images to Docker Hub
+          command: |
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker push girder/girder:latest
+              docker tag girder/girder:latest girder/girder:latest-py3
+              docker push girder/girder:latest-py3
+              if [[ $CIRCLE_TAG =~ ^v.*$ ]]; then
+              docker tag girder/girder:latest "girder/girder:$CIRCLE_TAG"
+              docker push "girder/girder:$CIRCLE_TAG"
+              docker tag girder/girder:latest "girder/girder:${CIRCLE_TAG}-py3"
+              docker push "girder/girder:${CIRCLE_TAG}-py3"
+              fi
+
+  publish:
+    executor: py3
+    steps:
+      - checkout:
+          path: girder
+      - deploy:
+          name: Publish Python packages
+          command: tox -e publish
+          working_directory: girder
+      - deploy:
+          name: Publish Ansible role
+          command: tox -e release_ansible
+          working_directory: girder
+
+  publish-release:
+    executor: py3
+    steps:
+      - checkout:
+          path: girder
+      - deploy:
+          name: Publish npm packages
+          command: npm run publish-all
+          working_directory: girder
+
+workflows:
+  version: 2
+  test-all:
+    jobs:
+      - server-lint-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - server-pytest-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - server-legacy-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - web-lint-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - web-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - integration-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - coverage:
+          requires:
+            - server-pytest-test
+            - server-legacy-test
+            - web-test
+            - integration-test
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - ansible-test:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - dockers:
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+      - publish:
+          requires:
+            - server-lint-test
+            - web-lint-test
+            - coverage
+            # - ansible-test
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+            branches:
+              only: master
+      - publish-release:
+          requires:
+            - server-lint-test
+            - web-lint-test
+            - coverage
+            # - ansible-test
+          filters:
+            tags:
+              only: /^v[0-9]+.*/
+            branches:
+              ignore: /.*/
+      - publish-dockers:
+          requires:
+            - dockers
+            - publish-release
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only:
+                - master

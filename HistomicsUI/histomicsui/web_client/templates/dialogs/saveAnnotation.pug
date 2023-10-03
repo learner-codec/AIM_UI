@@ -1,0 +1,106 @@
+mixin functional(name, key, title, color)
+  .form-group.h-functional-value
+    label(for='h-annotation-' + name) #{title}
+    - let anyFuncs = !!Object.keys(styleableFuncs || {}).length;
+    if !anyFuncs
+      .input-group.h-colorpicker(id="h-annotation-colorpicker-" + name)
+        input.input-sm.form-control(id="h-annotation-" + name, type='text', value=defaultStyles[key])
+        span.input-group-addon
+          i
+    else
+      .row
+        .col-sm-2
+          input(id="h-annotation-" + name + "-fixed", type="radio", name=name + "-set", checked=styleFuncs[key].useFunc ? undefined : 'checked')
+          label.unstyled(for='h-annotation-' + name + '-fixed') Constant
+        .col-sm-10
+          .input-group.h-colorpicker(id="h-annotation-colorpicker-" + name)
+            input.input-sm.form-control(id="h-annotation-" + name, type='text', value=defaultStyles[key])
+            span.input-group-addon
+              i
+      .row
+        .col-sm-2
+          input(id="h-annotation-" + name + "-func", type="radio", name=name + "-set", checked=styleFuncs[key].useFunc ? 'checked' : undefined)
+          label.unstyled(for='h-annotation-' + name + '-func') From
+        .col-sm-10
+          select.format-control.input-sm(id="h-annotation-" + name + "-func-list")
+            each sfunc in styleableFuncs
+              if !sfunc.categoric
+                option(value=sfunc.key, selected=styleFuncs[key].key === sfunc.key) #{sfunc.name}
+      .row
+        .col-sm-2
+        .col-sm-3
+          | minimum
+          .input-group.h-colorpicker
+            input.input-sm.form-control(id="h-annotation-" + name + "-min", type='text', value=styleFuncs[key].minColor || defaultStyles[key])
+            span.input-group-addon
+              i
+        .col-sm-2
+          div
+            input(id="h-annotation-" + name + "-min-auto", type="radio", name=name + "-min-set", checked=styleFuncs[key].minSet ? undefined : 'checked')
+            label.unstyled(for='h-annotation-' + name + '-min-auto') auto
+          div
+            input(id="h-annotation-" + name + "-min-setval", type="radio", name=name + "-min-set", checked=styleFuncs[key].minSet ? 'checked' : undefined)
+            input(id="h-annotation-" + name + "-min-val", type="number", step="any", value=styleFuncs[key].minValue)
+        .col-sm-3
+          | maximum
+          .input-group.h-colorpicker
+            input.input-sm.form-control(id="h-annotation-" + name + "-max", type='text', value=styleFuncs[key].maxColor || defaultStyles[key])
+            span.input-group-addon
+              i
+        .col-sm-2
+          div
+            input(id="h-annotation-" + name + "-max-auto", type="radio", name=name + "-max-set", checked=styleFuncs[key].maxSet ? undefined : 'checked')
+            label.unstyled(for='h-annotation-' + name + '-max-auto') auto
+          div
+            input(id="h-annotation-" + name + "-max-setval", type="radio", name=name + "-max-set", checked=styleFuncs[key].maxSet ? 'checked' : undefined)
+            input(id="h-annotation-" + name + "-max-val", type="number", step="any", value=styleFuncs[key].maxValue)
+
+- var timestamp = moment().format('YYYY-MM-DD HH:mm')
+- var defaultName = 'Annotation '+ timestamp
+.modal-dialog(role='document')
+  .modal-content
+    form.modal-form(role='form')
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')
+          span(aria-hidden='true') &times;
+        h4.modal-title #{title}
+      .modal-body
+        .form-group
+          label(for='h-annotation-name') #{name}
+          input#h-annotation-name.input-sm.form-control(
+            type='text', placeholder=namePlaceholder || "Enter a name of your Annotation", value=annotation.name || defaultName)
+        .form-group
+          label(for='h-annotation-description') #{description}
+          textarea#h-annotation-description.form-control.input-sm(
+            rows='4', placeholder=descriptionPlaceHolder || 'Enter an optional description')
+            | #{annotation.description}
+        if model && model.id
+          .g-item-created.hui-info-list-entry
+            i.icon-clock
+            | #{conDName}: #{formatDate(model.get('created'), DATE_SECOND)}
+          .g-model-updated.hui-info-list-entry
+            i.icon-clock
+            | #{updDName}: #{formatDate(model.get('updated'), DATE_SECOND)}
+          .g-model-id.hui-info-list-entry
+            i.icon-share
+            | #{uidDName}: #{model.id}
+            if model.get('_version')
+              = " "
+              i.icon-angle-circled-down
+              | #{gvDName}: #{model.get('_version')}
+          .hui-annotation-metadata.hui-annotation-metadata-dialog
+        if showStyleEditor
+          hr
+          h4 Set the style for all point, line, and polygon elements in this annotation
+          .form-group
+            label(for='h-annotation-line-width') Line Width
+            input#h-annotation-line-width.input-sm.form-control(
+              type='number', min=0, step=0.1, value=defaultStyles.lineWidth)
+          +functional('line-color', 'lineColor', 'Line color', true)
+          +functional('fill-color', 'fillColor', 'Fill color', true)
+        .g-validation-failed-message.hidden
+      .modal-footer
+        if hasAdmin
+          button.btn.btn-warning.h-access(type='button') #{permDName} 
+        button.btn.btn-default.h-cancel(type='button', data-dismiss='modal') #{cancelButtonName ?  cancelButtonName : 'Cancel'}
+        button.btn.btn-primary.h-submit(type='submit') #{saveButtonName ? saveButtonName:'Save'}

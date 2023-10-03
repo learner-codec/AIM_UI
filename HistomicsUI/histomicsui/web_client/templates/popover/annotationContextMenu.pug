@@ -1,0 +1,16 @@
+.list-group.h-annotation-context-menu
+  a.h-remove-group.list-group-item(href='#')
+    span.icon-cancel
+    | #{rmgDName}
+  each group in groups
+    if group
+      a.h-set-group.list-group-item(href='#', data-group=group)
+        span.icon-right-big
+        = group
+  if numberSelected === 1
+    a.list-group-item.h-edit-shape(href='#', title='Keyboard shortcut: e')
+      | #[span.icon-pencil] #{editShapeDName}
+    a.list-group-item.h-edit-elements(href='#')
+      | #[span.icon-cog] #{editPropertiesDName}
+  a.list-group-item.h-remove-elements(href='#')
+    | #[span.icon-trash] #{deleteDName}

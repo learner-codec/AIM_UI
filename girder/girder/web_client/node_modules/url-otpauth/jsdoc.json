@@ -1,0 +1,9 @@
+{
+    "plugins": ["plugins/markdown"],
+    "opts": {
+        "destination": "./doc/"
+    },
+    "source": {
+        "include": ["index.js"]
+    }
+}

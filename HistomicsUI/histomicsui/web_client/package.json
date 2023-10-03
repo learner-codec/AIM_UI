@@ -1,0 +1,113 @@
+{
+    "name": "@girder/histomicsui",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Organize, visualize, and analyze histology images.",
+    "homepage": "https://github.com/DigitalSlideArchive/histomicsui",
+    "bugs": {
+        "url": "https://github.com/DigitalSlideArchive/histomicsui/issues"
+    },
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DigitalSlideArchive/histomicsui.git"
+    },
+    "peerDependencies": {
+        "@girder/core": "*"
+    },
+    "main": "./index.js",
+    "girderPlugin": {
+        "name": "histomicsui",
+        "main": "./main.js",
+        "dependencies": [
+            "large_image",
+            "large_image_annotation",
+            "slicer_cli_web"
+        ],
+        "webpack": "webpack.helper"
+    },
+    "scripts": {
+        "lint": "eslint --cache . && eslint --no-eslintrc -c ./package.json --cache ../../tests && pug-lint . && stylus-supremacy format --compare ./**/*.styl --options package.json",
+        "format": "eslint --cache --fix . && eslint --no-eslintrc -c ./package.json --cache --fix ../../tests && stylus-supremacy format ./**/*.styl --replace --options package.json"
+    },
+    "dependencies": {
+        "@vue/compiler-sfc": "^3.2.33",
+        "backbone.localstorage": "^2.0.2",
+        "bootstrap-submenu": "^2.0.4",
+        "copy-webpack-plugin": "^4.5.2",
+        "petite-vue": "^0.4.1",
+        "sinon": "^2.1.0",
+        "tinycolor2": "~1.4.1",
+        "url-search-params-polyfill": "^8.1.1",
+        "vue": "~2.6.14",
+        "vue-template-compiler": "~2.6.14",
+        "vue-loader": "~15.9.8",
+        "vue-color": "^2.8.1",
+        "webpack": "^3"
+    },
+    "devDependencies": {
+        "@girder/eslint-config": "*",
+        "@girder/pug-lint-config": "*",
+        "eslint": "^8.20.0",
+        "eslint-config-semistandard": "^17.0.0",
+        "eslint-config-standard": "^17.0.0",
+        "eslint-plugin-backbone": "^2.1.1",
+        "eslint-plugin-import": "^2.25.3",
+        "eslint-plugin-n": "^15.2.4",
+        "eslint-plugin-promise": "^6.0.0",
+        "eslint-plugin-vue": "~9.14.0",
+        "pug-lint": "^2",
+        "stylus-supremacy": "^2.17.5"
+    },
+    "eslintConfig": {
+        "extends": [
+            "@girder",
+            "plugin:vue/recommended"
+        ],
+        "overrides": [
+            {
+                "files": [
+                    "*.js",
+                    "*.vue"
+                ]
+            }
+        ],
+        "rules": {
+            "for-direction": "error",
+            "getter-return": "error",
+            "multiline-ternary": [
+                "error",
+                "always-multiline"
+            ],
+            "no-alert": "error",
+            "switch-colon-spacing": "error",
+            "object-curly-spacing": [
+                "error",
+                "never"
+            ],
+            "import/exports-last": "error",
+            "promise/no-native": "error",
+            "promise/no-return-in-finally": "error",
+            "promise/no-return-wrap": "error",
+            "no-var": "off",
+            "vue/require-prop-types": "off"
+        },
+        "root": true
+    },
+    "eslintIgnore": [
+        "**/node_modules/**"
+    ],
+    "pugLintConfig": {
+        "extends": "@girder/pug-lint-config"
+    },
+    "stylusSupremacy.insertColons": false,
+    "stylusSupremacy.insertSemicolons": false,
+    "stylusSupremacy.insertBraces": false,
+    "stylusSupremacy.tabStopChar": "  ",
+    "stylusSupremacy.quoteChar": "\"",
+    "stylusSupremacy.alwaysUseZeroWithoutUnit": true,
+    "stylusSupremacy.reduceMarginAndPaddingValues": true,
+    "stylusSupremacy.ignoreFiles": [
+        "node_modules/**"
+    ]
+}

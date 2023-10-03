@@ -1,0 +1,99 @@
+.g-config-breadcrumb-container
+p.g-hui-description
+  | Provides a toolkit for analyzing histology images.
+form#g-hui-form(role="form")
+  .form-group
+    label(for="g-hui-webroot-path") Root Path
+    input#g-hui-webroot-path.form-control.input-sm(
+        type="text", value=settings['histomicsui.webroot_path'] || '',
+        placeholder=`Default: ${defaults['histomicsui.webroot_path'] || 'histomics'}`,
+        title="The relative URL of the application.")
+  .form-group
+    label(for="g-hui-brand-name") Brand Name
+    input#g-hui-brand-name.form-control.input-sm(
+        type="text", value=settings['histomicsui.brand_name'] || '',
+        placeholder=`Default: ${defaults['histomicsui.brand_name'] || 'none'}`,
+        title="The brand name of the application.")
+  .form-group
+    label(for="g-hui-brand-color") Brand Color
+    #g-hui-brand-color-container
+      input#g-hui-brand-color.form-control.input-sm(
+          type="color", value=settings['histomicsui.brand_color'] || defaults['histomicsui.brand_color'],
+          title="The color of the application brand text.")
+      button#g-hui-brand-default-color.form-control.input-sm(
+          type="button", title="Default color") default
+  .form-group
+    label(for="g-hui-banner-color") Banner Color
+    #g-hui-banner-color-container
+      input#g-hui-banner-color.form-control.input-sm(
+          type="color", value=settings['histomicsui.banner_color'] || defaults['histomicsui.banner_color'],
+          title="The banner color of the application.")
+      button#g-hui-banner-default-color.form-control.input-sm(
+          type="button", title="Default color") default
+  .form-group
+    label(for="g-hui-help-url") Help URL
+    #g-hui-help-url-container
+      input#g-hui-help-url.form-control.input-sm(
+          type="text", value=settings['histomicsui.help_url'],
+          placeholder="(Optional) A URL to direct users to to provide help",
+          title="The link that the optional help button in the application should lead to.  If no URL is specified, the help button won't be displayed.")
+      button#g-hui-help-default-url.form-control.input-sm(
+          type="button", title="Default URL") default
+  .form-group
+    label(for="g-hui-help-text") Help Text
+    #g-hui-help-text-container
+      input#g-hui-help-text.form-control.input-sm(
+          type="text", value=settings['histomicsui.help_text'],
+          placeholder="The text to display with the help button",
+          title="The text for the optional help buttion in the application.")
+      button#g-hui-help-default-text.form-control.input-sm(
+          type="button", title="Default text") default
+  .form-group
+    label(for="g-hui-help-tooltip") Help Tooltip
+    #g-hui-help-tooltip-container
+      input#g-hui-help-tooltip.form-control.input-sm(
+          type="text", value=settings['histomicsui.help_tooltip'],
+          placeholder="The text for the help button's tooltip",
+          title="The tooltip text for the optional help buttion in the application.")
+      button#g-hui-help-default-tooltip.form-control.input-sm(
+          type="button", title="Default tooltip") default
+  .form-group
+    label
+      | Default styles for drawing annotations
+    input#g-hui-default-draw-styles.input-sm.form-control(
+        type="text", value=settings['histomicsui.default_draw_styles'],
+        placeholder='A JSON object listing default annotation drawing styles.',
+        title='A list of dictionaries of drawing styles')
+  .form-group
+    label
+      | Panel layout
+    input#g-hui-panel-layout.input-sm.form-control(
+        type="text", value=settings['histomicsui.panel_layout'],
+        placeholder='A JSON list of objects for each panel',
+        title='A JSON list of objects for each panel.  Each panel has name (the short internal name, such as zoom, draw, or analysis), position (one of default, left, right, hidden), state (one of default, open, closed)')
+  .form-group
+    label(for="g-hui-quarantine-folder") Quarantine Folder
+    p.g-hui-description
+      | If a quarantine folder is specified, users with write access will see a Quarantine button next to items.  When clicked, this moves that item to the quarantine folder and adds metadata to record where it was originally.  The quarantine folder should have restricted visibility.
+    .input-group.input-group-sm
+      input#g-hui-quarantine-folder.form-control.input-sm(
+          type="text", value=settings['histomicsui.quarantine_folder'] || '',
+          title="A folder to store quarantined items.")
+      .input-group-btn
+        button.g-open-browser.btn.btn-default(type="button")
+          i.icon-folder-open
+  .form-group
+    label Keep annotation files after ingest
+    p.g-hui-image-description
+      | After an annotation (.anot) file is uploaded and ingested, it can be kept as a new item or removes.
+    .g-hui-delete-annotations-after-ingest-container
+      label.radio-inline
+        input.g-hui-keep-annotations-after-ingest(type="radio", name="g-hui-delete-annotations-after-ingest", checked=settings['histomicsui.delete_annotations_after_ingest'] !== true ? 'checked': undefined)
+        | Keep annotation items after ingest
+      label.radio-inline
+        input.g-hui-delete-annotations-after-ingest(type="radio", name="g-hui-delete-annotations-after-ingest", checked=settings['histomicsui.delete_annotations_after_ingest'] !== true ? undefined : 'checked')
+        | Remove annotation items after ingest
+  p#g-hui-error-message.g-validation-failed-message
+.g-hui-buttons
+  button#g-hui-save.btn.btn-sm.btn-primary Save
+  button#g-hui-cancel.btn.btn-sm.btn-default Cancel
