@@ -3,14 +3,14 @@
     .modal-header
       button.close(type='button', data-dismiss='modal', aria-label='Close')
         span(aria-hidden='true') &times;
-      h4.modal-title Select a recently annotated image to open
+      h4.modal-title #{title}
     .modal-body
       form.form-inline
         .form-group
-          label(for='h-image-name') Image Name
+          label(for='h-image-name') #{imageNameText}
           input#h-image-name.form-control(type='text', value=imageName)
         .form-group
-          label(for='h-annotation-creator') Creator
+          label(for='h-annotation-creator') #{creatorNameText}
           select#h-annotation-creator.form-control(type='text')
             option(value='', selected= !creator) Any user
             for user in users.models

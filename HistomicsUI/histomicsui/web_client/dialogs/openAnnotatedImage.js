@@ -73,7 +73,10 @@ const OpenAnnotatedImage = View.extend({
             return this;
         }
         this.$el.html(template({
+            title: "选择要打开的带注释的图片",
+            imageNameText:"图片名称",
             imageName: this._query.get('imageName'),
+            creatorNameText:"作者",
             creator: this._query.get('creator'),
             users: this._users
         })).girderModal(this);
