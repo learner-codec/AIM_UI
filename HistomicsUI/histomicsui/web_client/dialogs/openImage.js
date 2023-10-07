@@ -14,9 +14,11 @@ function createDialog(item, itemParent) {
         parentView: null,
         titleText: '选一个 WSI 幻灯片...',//'Select a slide...',
         submitText: '打开',//'Open',
+        cancelText: '取消',
         showItems: true,
+        selectedItemPlaceholder:"选定的",
         selectItem: true,
-        helpText: 'Click on a slide item to open.',
+        helpText: '单击要打开的 WSI 图像...',
         root: itemParent,
         rootSelectorSettings: {
             pageLimit: 0,
