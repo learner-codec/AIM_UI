@@ -31,8 +31,10 @@ var BrowserWidget = View.extend({
      * @param {string} [titleText="Select an item"] Text to display in the modal header
      * @param {string} [helpText] Info text to display below the hierarchy widget
      * @param {string} [submitText="Save"] Text to display on the submit button
+     * @param {string} [cancelText="Cancel"] Text to display on the cancel button
      * @param {boolean} [showItems=false] Show items in the hierarchy widget
      * @param {boolean} [showPreview=true] Show a preview of the current object id
+     * @param {string} [selectedItemPlaceholder="selected item"]
      * @param {function} [validate] A validation function, which is passed the selected model as a
         parameter, and which should return a promise. The returned promise should resolve if the
         selection is acceptable and reject with a string value (as an error message) if the
@@ -69,6 +71,8 @@ var BrowserWidget = View.extend({
         this.showItems = settings.showItems;
         this.showPreview = _.isUndefined(settings.showPreview) ? true : !!settings.showPreview;
         this.submitText = settings.submitText || 'Save';
+        this.cancelText = settings.cancelText || 'Cancel';
+        this.selectedItemPlaceholder = settings.selectedItemPlaceholder;
         this.root = settings.root;
         this.defaultSelectedResource = settings.defaultSelectedResource;
         this.input = settings.input;
@@ -108,7 +112,9 @@ var BrowserWidget = View.extend({
                 help: this.helpText,
                 preview: this.showPreview,
                 submit: this.submitText,
+                cancel: this.cancelText,
                 input: this.input,
+                selectedItemPlaceholder:this.selectedItemPlaceholder,
                 selectItem: this.selectItem,
                 defaultSelectedResource: defaultResourcename
             })
