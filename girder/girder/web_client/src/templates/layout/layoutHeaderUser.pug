@@ -8,19 +8,19 @@
         li(role="presentation")
           a.g-my-folders(href=`#user/${user.id}`)
             i.icon-folder
-            | My folders
+            | 我的文件
         li(role="presentation")
           a.g-my-settings(href=`#useraccount/${user.id}/info`)
             i.icon-cog
-            | My account
+            | 我的账户
         li.divider(role="presentation")
         li(role="presentation")
           a.g-logout
             i.icon-logout
-            | Log out
+            | 退出登陆
   else
     if registrationPolicy !== 'closed'
-      a.g-register Register
+      a.g-register 注册
       .g-or-text or
-    a.g-login Log In
+    a.g-login 登陆
       i.icon-login

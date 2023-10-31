@@ -6,30 +6,30 @@
         h4.modal-title= title
       .modal-body
         #g-group-login.form-group
-          label.control-label(for="g-login") Choose a login name
+          label.control-label(for="g-login") 请输入您的用户名
           input#g-login.input-sm.form-control(type="text", placeholder="Login")
         #g-group-email.form-group
-          label.control-label(for="g-email") Enter email address
+          label.control-label(for="g-email") 输入您的电子邮箱地址
           input#g-email.input-sm.form-control(type="text", placeholder="Email")
         #g-group-firstName.form-group
-          label.control-label(for="g-firstName") Enter first name
+          label.control-label(for="g-firstName") 输入您的名字
           input#g-firstName.input-sm.form-control(type="text", placeholder="First name")
         #g-group-lastName.form-group
-          label.control-label(for="g-lastName") Enter last name
+          label.control-label(for="g-lastName") 输入您的姓氏
           input#g-lastName.input-sm.form-control(type="text", placeholder="Last name")
         #g-group-password.form-group
-          label.control-label(for="g-password") Choose a password
+          label.control-label(for="g-password") 设置您的密码
           input#g-password.input-sm.form-control(type="password", placeholder="Password")
         #g-group-password2.form-group
-          label.control-label(for="g-password2") Retype password
+          label.control-label(for="g-password2") 再次确认密码
           input#g-password2.input-sm.form-control(type="password", placeholder="Password")
         .g-validation-failed-message
         if !currentUser
           .g-bottom-message
-            | Already have an account?
-            a.g-login-link  Log in here.
+            | 已经拥有账户?
+            a.g-login-link  在此登陆.
       .modal-footer
-        a.btn.btn-default(data-dismiss="modal") Close
+        a.btn.btn-default(data-dismiss="modal") 关闭页面
         button#g-register-button.btn.btn-primary(type="submit")
           i.icon-plus-circled
-          |  Register
+          |  注册

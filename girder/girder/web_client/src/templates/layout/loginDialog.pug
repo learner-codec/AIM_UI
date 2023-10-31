@@ -3,14 +3,14 @@
     form#g-login-form.modal-form(role="form")
       .modal-header
         button.close(data-dismiss="modal", aria-hidden="true", type="button") &times;
-        h4.modal-title Log in
+        h4.modal-title 登陆
       .modal-body
         if enablePasswordLogin
           .form-group
-            label.control-label(for="g-login") Login or email
+            label.control-label(for="g-login") Email
             input#g-login.input-sm.form-control(type="text", placeholder="Enter login")
           .form-group
-            label.control-label(for="g-password") Password
+            label.control-label(for="g-password") 密码
             input#g-password.input-sm.form-control(type="password", placeholder="Enter password")
           #g-login-otp-group.form-group.hidden
             label.control-label(for="g-login-otp") Two-factor code
@@ -19,12 +19,12 @@
           .g-validation-failed-message
           .g-bottom-message
             if registrationPolicy !== 'closed'
-              | Don't have an account yet?
-              a.g-register-link  Register here.
+              | 还未拥有账户?
+              a.g-register-link  在此注册.
               |  |
-            a.g-forgot-password  Forgot your password?
+            a.g-forgot-password  忘记您的密码?
       .modal-footer
-        a.btn.btn-default(data-dismiss="modal") Close
+        a.btn.btn-default(data-dismiss="modal") 关闭页面
         button#g-login-button.btn.btn-primary(type="submit")
           i.icon-login
-          |  Login
+          |  登陆
