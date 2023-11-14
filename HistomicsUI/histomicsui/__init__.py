@@ -188,7 +188,7 @@ def validateHistomicsUIQuarantineFolder(doc):
 
 # Defaults that have fixed values are added to the system defaults dictionary.
 SettingDefault.defaults.update({
-    PluginSettings.HUI_WEBROOT_PATH: 'histomics',
+    PluginSettings.HUI_WEBROOT_PATH: 'aimui',
     PluginSettings.HUI_BRAND_NAME: 'HistomicsUI',
     PluginSettings.HUI_BANNER_COLOR: '#f8f8f8',
     PluginSettings.HUI_BRAND_COLOR: '#777777',

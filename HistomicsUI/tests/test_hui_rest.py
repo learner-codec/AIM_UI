@@ -268,7 +268,7 @@ class TestHUIEndpoints:
             'good': {'alternate1': 'alternate1'},
         }, {
             'key': PluginSettings.HUI_BRAND_NAME,
-            'initial': 'HistomicsUI',
+            'initial': 'AIMUI',
             'bad': {'': 'not be empty'},
             'good': {'Alternate': 'Alternate'},
         }, {
