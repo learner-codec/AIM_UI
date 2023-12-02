@@ -1,5 +1,5 @@
 # AIM_UI
-This project aims to adopt DSA in chinese language as well as implement custom deep learning models developed by our lab AIM_NUIST
+This project aims to adopt [DSA](https://github.com/DigitalSlideArchive/digital_slide_archive) in chinese language as well as implement custom deep learning models developed by our lab AIM_NUIST
 
 ## Setting up development environment.
 As of right now there are two stages of development. one is **girder** and another one is **HistomicsUI**. All the base functionality like widgets and task bar is derived from girder and everything related to the annotation and visualization is local to HistomicsUI. To develop the login or main user-interface can be done in girder. For more insight please consider looking at the past commits. The steps for setting up development environment are as follows.
